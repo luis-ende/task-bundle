@@ -14,7 +14,7 @@
 
     <testsuites>
         <testsuite name="Glooby Task Bundle Test Suite">
-            <directory>src/Tests</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 
