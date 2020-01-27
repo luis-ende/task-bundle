@@ -2,7 +2,10 @@ parameters:
     glooby_task.queue_processor.limit: 10
 
 services:
-    _defaults: { public: true }
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
 
     Glooby\TaskBundle\Task\PingTask: '@glooby_task.ping'
     Glooby\TaskBundle\Schedule\ScheduleRegistry: '@glooby_task.schedule_registry'
@@ -72,31 +75,23 @@ services:
     glooby_task.task_run_command:
         class:
             Glooby\TaskBundle\Command\Task\RunCommand
-        arguments:
-            - '@service_container'
         tags:
             - { name: 'console.command', command: 'task:run' }
 
     glooby_task.scheduler_run_command:
         class:
             Glooby\TaskBundle\Command\Scheduler\RunCommand
-        arguments:
-            - '@service_container'
         tags:
             - { name: 'console.command', command: 'scheduler:run' }
 
     glooby_task.scheduler_prune_command:
         class:
             Glooby\TaskBundle\Command\Scheduler\PruneCommand
-        arguments:
-            - '@service_container'
         tags:
             - { name: 'console.command', command: 'scheduler:prune' }
 
     glooby_task.scheduler_sync_command:
         class:
             Glooby\TaskBundle\Command\Scheduler\SyncCommand
-        arguments:
-            - '@service_container'
         tags:
             - { name: 'console.command', command: 'scheduler:sync' }
