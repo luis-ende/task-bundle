@@ -2,21 +2,36 @@
 
 namespace Glooby\TaskBundle\Command\Scheduler;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Glooby\TaskBundle\Queue\QueueMonitor;
+use Glooby\TaskBundle\Queue\QueueProcessor;
+use Glooby\TaskBundle\Queue\QueueScheduler;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @author Emil Kilhage
  */
-class RunCommand extends ContainerAwareCommand
+class RunCommand extends Command
 {
-    private $container;
+    /** @var QueueMonitor */
+    private $monitor;
 
-    public function __construct(ContainerInterface $container){
+    /** @var QueueProcessor */
+    private $processor;
+
+    /** @var QueueScheduler */
+    private $scheduler;
+
+    public function __construct(
+        QueueMonitor $monitor,
+        QueueProcessor $processor,
+        QueueScheduler $scheduler
+    ) {
         parent::__construct();
-        $this->container = $container;
+        $this->monitor = $monitor;
+        $this->processor = $processor;
+        $this->scheduler = $scheduler;
     }
 
     /**
@@ -32,14 +47,9 @@ class RunCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $runner = $this->container->get('glooby_task.queue_processor');
-        $runner->setOutput($output);
-        $runner->process();
-
-        $monitor = $this->container->get('glooby_task.queue_monitor');
-        $monitor->monitor();
-
-        $scheduler = $this->container->get('glooby_task.queue_scheduler');
-        $scheduler->schedule();
+        $this->processor->setOutput($output);
+        $this->processor->process();
+        $this->monitor->monitor();
+        $this->scheduler->schedule();
     }
 }

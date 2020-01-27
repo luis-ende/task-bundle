@@ -2,6 +2,7 @@
 
 namespace Glooby\TaskBundle\Command\Task;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
 use Glooby\TaskBundle\Task\TaskRunner;
 use Symfony\Component\Console\Command\Command;
@@ -9,7 +10,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @author Emil Kilhage
@@ -17,11 +17,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RunCommand extends Command
 {
     protected static $defaultName = 'task:run';
-    private $container;
 
-    public function __construct(ContainerInterface $container){
+    /** @var EntityManagerInterface */
+    private $em;
+
+    /** @var TaskRunner */
+    private $runner;
+
+    public function __construct(EntityManagerInterface $em, TaskRunner $runner){
         parent::__construct();
-        $this->container = $container;
+        $this->em = $em;
+        $this->runner = $runner;
     }
 
     /**
@@ -40,11 +46,10 @@ class RunCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $runner =  $this->container->get('glooby_task.task_runner');
-        $runner->setOutput($output);
+        $this->runner->setOutput($output);
 
         if ($input->getOption('id')) {
-            $response = $this->runId($input, $runner);
+            $response = $this->runId($input);
 
             if (!$input->getOption('silent')) {
                 if (!empty($response)) {
@@ -54,7 +59,7 @@ class RunCommand extends Command
                 }
             }
         } else {
-            $response = $runner->runTask($input->getArgument('service'));
+            $response = $this->runner->runTask($input->getArgument('service'));
 
             if (!$input->getOption('silent')) {
                 $output->writeln($response);
@@ -67,18 +72,14 @@ class RunCommand extends Command
      * @param TaskRunner $runner
      * @throws NoResultException
      */
-    protected function runId(InputInterface $input, TaskRunner $runner)
+    protected function runId(InputInterface $input)
     {
-        $task = $this->container
-            ->get('doctrine')
-            ->getManager()
-            ->getRepository('GloobyTaskBundle:QueuedTask')
-            ->find($input->getOption('id'));
+        $task = $this->em->getRepository('GloobyTaskBundle:QueuedTask')->find($input->getOption('id'));
 
         if (null === $task) {
             throw new NoResultException();
         }
 
-        return $runner->run($task);
+        return $this->runner->run($task);
     }
 }

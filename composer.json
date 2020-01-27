@@ -15,6 +15,9 @@
     "autoload": {
         "psr-4": { "Glooby\\TaskBundle\\": "src/" }
     },
+    "autoload-dev": {
+        "psr-4": { "Glooby\\TaskBundle\\Tests\\": "tests/" }
+    },
     "require": {
         "php": ">=7.1",
         "symfony/framework-bundle": "~4.3",
@@ -25,7 +28,7 @@
         "phpspec/prophecy": "~1.8",
         "php-coveralls/php-coveralls": "~2.1",
         "symfony/phpunit-bridge": "^4.3",
-        "phpunit/phpunit": "^7"
-
+        "phpunit/phpunit": "^7",
+        "symfony/var-dumper": "^4.3"
     }
 }
